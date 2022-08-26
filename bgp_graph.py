@@ -10,9 +10,6 @@ import sys
 import common
 from datetime import datetime
 
-DATAS_DIR = "datas/"
-RESULTS_DIR = "results/"
-
 
 def compute_graph(source: str)->ig.Graph:
     g = ig.Graph()
@@ -55,6 +52,9 @@ def compute_graph(source: str)->ig.Graph:
 
 
 if __name__ == "__main__":
+
+
+    common.setup()
 
     # source file :
     # bgpdump -M -O dump.txt bview.gz

@@ -2,6 +2,21 @@
 # -*- coding: utf-8 -*-
 
 from enum import Enum
+from os import path
+
+DATAS_DIR = "datas/"
+RESULTS_DIR = "results/"
+
+def setup():
+    """
+    Check for existing input and output directories
+    Set output filenames
+    """
+
+    if not path.isdir(DATAS_DIR): mkdir("datas", 0o755)
+    if not path.isdir(RESULTS_DIR): mkdir(RESULTS_DIR, 0o755)
+    if not path.isdir(SESSION_DIR): mkdir(SESSION_DIR, 0o755)
+
 
 class Affich(Enum):
     """
