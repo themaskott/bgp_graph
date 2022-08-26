@@ -7,18 +7,24 @@ import numpy as np
 import json
 import re
 import sys
-import common
+
+import argparse
 from datetime import datetime
+
+import common
 
 
 def compute_graph(source: str)->ig.Graph:
     g = ig.Graph()
     edges = []
     vertices = []
-    k = 0
+    count = 0
+
+    start_time = datetime.now()
+
     with open(source,'r') as s:
         for l in s:
-            if k % 10000==0:
+            if count % 10000==0:
                 common.Affich.success(0,"Nb of pathes : " + str(k))
                 common.Affich.success(1,"Nb of vertices : " + str(len(vertices)))
                 common.Affich.success(1,"Nb of edges : " + str(len(edges)))
@@ -32,7 +38,7 @@ def compute_graph(source: str)->ig.Graph:
                             vertices.append(path[i])
                         if path[i+1] not in vertices:
                             vertices.append(path[i+1])
-            k+=1
+            count+=1
 
     common.Affich.success(0,"Nb of pathes : " + str(k))
     common.Affich.success(1,"Nb of vertices : " + str(len(vertices)))
@@ -45,23 +51,48 @@ def compute_graph(source: str)->ig.Graph:
     common.Affich.success(1,"Nb of vertices : " + str(g.vcount()))
     common.Affich.success(1,"Nb of edges : " + str(g.ecount()))
 
+    end_time = datetime.now()
+    common.Affich.success(0,"Duration: {}".format(end_time - start_time))
+
+
     return g
 
+def load_graph(source: str)->ig.Graph:
+
+        g = ig.Graph()
+        g.Read_GrapMML(source)
+        common.Affich.success(0,"Graph loaded successfully")
+
+        return g
 
 
+
+
+def getArgParser():
+    """
+    Manage command line arguments
+    """
+
+    argparser = argparse.ArgumentParser( add_help=True, description="""Compute graph""" )
+
+    argparser.add_argument("--compute", action="store_true", help="Compute graph from dump file")
+    argparser.add_argument("--load", action="store_true", help="Load graph from graph file")
+
+    return argparser
 
 
 if __name__ == "__main__":
 
 
     common.setup()
-
-    # source file :
-    # bgpdump -M -O dump.txt bview.gz
-    # cut -d "|" 2022-07-18-rrc06-dump.txt -f7 | sort | uniq > uniq_path.txt
     source = sys.argv[1]
-    start_time = datetime.now()
-    g = compute_graph(source)
-    end_time = datetime.now()
-    g.write_graphml("bgp_graph.xml")
-    common.Affich.success(0,"Duration: {}".format(end_time - start_time))
+
+    args = getArgParser().parse_args()
+
+    if args.compute:
+        g = compute_graph(source)
+        g.write_graphml("bgp_graph.xml")
+
+
+    if args.load:
+        g = load_graph(source)
