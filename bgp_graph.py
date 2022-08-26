@@ -25,7 +25,7 @@ def compute_graph(source: str)->ig.Graph:
     with open(source,'r') as s:
         for l in s:
             if count % 10000==0:
-                common.Affich.success(0,"Nb of pathes : " + str(k))
+                common.Affich.success(0,"Nb of pathes : " + str(count))
                 common.Affich.success(1,"Nb of vertices : " + str(len(vertices)))
                 common.Affich.success(1,"Nb of edges : " + str(len(edges)))
 
@@ -40,7 +40,7 @@ def compute_graph(source: str)->ig.Graph:
                             vertices.append(path[i+1])
             count+=1
 
-    common.Affich.success(0,"Nb of pathes : " + str(k))
+    common.Affich.success(0,"Nb of pathes : " + str(count))
     common.Affich.success(1,"Nb of vertices : " + str(len(vertices)))
     common.Affich.success(1,"Nb of edges : " + str(len(edges)))
 
@@ -60,7 +60,7 @@ def compute_graph(source: str)->ig.Graph:
 def load_graph(source: str)->ig.Graph:
 
         g = ig.Graph()
-        g.Read_GrapMML(source)
+        g.Read_GraphML(source)
         common.Affich.success(0,"Graph loaded successfully")
 
         return g
@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     if args.compute:
         g = compute_graph(args.compute)
-        g.write_graphml("bgp_graph.xml")
+        g.write_graphml("bgp_graph.gml")
 
 
     if args.load:
