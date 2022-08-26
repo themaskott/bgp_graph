@@ -15,7 +15,6 @@ def setup():
 
     if not path.isdir(DATAS_DIR): mkdir("datas", 0o755)
     if not path.isdir(RESULTS_DIR): mkdir(RESULTS_DIR, 0o755)
-    if not path.isdir(SESSION_DIR): mkdir(SESSION_DIR, 0o755)
 
 
 class Affich(Enum):

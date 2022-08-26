@@ -75,8 +75,8 @@ def getArgParser():
 
     argparser = argparse.ArgumentParser( add_help=True, description="""Compute graph""" )
 
-    argparser.add_argument("--compute", action="store_true", help="Compute graph from dump file")
-    argparser.add_argument("--load", action="store_true", help="Load graph from graph file")
+    argparser.add_argument("-c", "--compute", dest="compute", help="Compute graph from dump file")
+    argparser.add_argument("-l", "--load", dest="load", help="Load graph from graph file")
 
     return argparser
 
@@ -85,14 +85,13 @@ if __name__ == "__main__":
 
 
     common.setup()
-    source = sys.argv[1]
 
     args = getArgParser().parse_args()
 
     if args.compute:
-        g = compute_graph(source)
+        g = compute_graph(args.compute)
         g.write_graphml("bgp_graph.xml")
 
 
     if args.load:
-        g = load_graph(source)
+        g = load_graph(args.load)
