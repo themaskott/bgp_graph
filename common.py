@@ -3,6 +3,8 @@
 
 from enum import Enum
 from os import path
+import json
+
 
 DATAS_DIR = "datas/"
 RESULTS_DIR = "results/"
@@ -16,6 +18,13 @@ def setup():
     if not path.isdir(DATAS_DIR): mkdir("datas", 0o755)
     if not path.isdir(RESULTS_DIR): mkdir(RESULTS_DIR, 0o755)
 
+
+def load_json_file(source:str)->dict:
+    """
+    Load a json file into a dict
+    """
+    with open(source, "r") as jf:
+        return json.load(jf)
 
 class Affich(Enum):
     """
