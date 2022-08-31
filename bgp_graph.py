@@ -156,23 +156,47 @@ def calc_diameter(f:str):
     g_undirected.computeWCC()
     common.Affich.success(0, "Diameter BD : " + str(g_undirected.diameterBD()))
 
-def vertices_above_degree(g:ig.Graph, d:int):
+def vertices_above_degree(g:ig.Graph, d:int, affich:bool):
+    """
+    Search for vertices with degree above a certain degree
+    """
     count = 0
     common.Affich.success(0, "Vertices with degree above : " + str(d))
     for v in g.vs:
         if g.degree(v) > d:
             count += 1
-            common.Affich.success(1, "AS" + str(v['name']))
+            if affich:
+                common.Affich.success(1, "AS" + str(v['name']))
     common.Affich.success(1, "Total : " + str(count))
 
-def vertices_under_degree(g:ig.Graph, d:int):
+def vertices_under_degree(g:ig.Graph, d:int, affich:bool):
+    """
+    Search for vertices with degree below a certain degree
+    """
     count = 0
     common.Affich.success(0, "Vertices with degree under : " + str(d))
     for v in g.vs:
         if g.degree(v) <= d:
             count += 1
-            #common.Affich.success(1, "AS" + str(v['name']))
+            if affich:
+                common.Affich.success(1, "AS" + str(v['name']))
     common.Affich.success(1, "Total : " + str(count))
+
+
+
+def metrics(g:ig.Graph):
+    """
+    Compute some metrics for the graph
+    """
+    #common.Affich.success(0,"Max degree : " + str(g.maxdegree()))
+    common.Affich.success(0,"Max degree : " + str(g.maxdegree()))
+
+    vertices_above_degree(g, 50, True)
+    vertices_above_degree(g, 100, True)
+
+    vertices_under_degree(g, 1, False)
+    vertices_under_degree(g, 2, False)
+    vertices_under_degree(g, 3, False)
 
 if __name__ == "__main__":
 
@@ -181,26 +205,22 @@ if __name__ == "__main__":
 
     if args.compute:
         g = compute_graph(args.compute)
-        g.write_gml("bgp_GML.gml")
+        g.write_gml(common.RESULTS_DIR+"bgp_GML.gml")
+        edges_2_txtfile(g, common.RESULTS_DIR+"bgp_graph.txt")
+        calc_diameter(common.RESULTS_DIR+"bgp_graph.txt")
+
 
     if args.fr:
         g = compute_graph_fr(args.fr)
-        g.write_gml("bgp_fr_GML.gml")
+        g.write_gml(common.RESULTS_DIR+"bgp_fr_GML.gml")
+        edges_2_txtfile(g, common.RESULTS_DIR+"bgp_fr_graph.txt")
+        calc_diameter(common.RESULTS_DIR+"bgp_fr_graph.txt")
+
 
     if args.load:
         g = load_graph(args.load)
 
-    common.Affich.success(0,"Max degree : " + str(g.maxdegree()))
-    common.Affich.success(0,"Diameter : " + str(g.diameter()))
-    #edges_2_txtfile(g, "bgp_graph.txt")
-
-    #calc_diameter("bgp_graph.txt")
-
-    #vertices_above_degree(g, 100)
-    #vertices_under_degree(g, 0)
-
-
-
+    metrics(g)
 
     #g.simplify()
     #common.Affich.success(0,"Graph simplified")
