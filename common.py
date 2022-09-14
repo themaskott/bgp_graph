@@ -5,6 +5,7 @@ from enum import Enum
 from os import path
 import json
 
+import autnums
 
 DATAS_DIR = "datas/"
 RESULTS_DIR = "results/"
@@ -17,6 +18,8 @@ def setup():
 
     if not path.isdir(DATAS_DIR): mkdir("datas", 0o755)
     if not path.isdir(RESULTS_DIR): mkdir(RESULTS_DIR, 0o755)
+    if not path.isfile(DATAS_DIR+"AS_FR.json"): autnums.extract_AS(autnums.update_AS(), True)
+    if not path.isfile(DATAS_DIR+"AS.json"): autnums.extract_AS(autnums.update_AS(), False)
 
 
 def load_json_file(source:str)->dict:
@@ -25,6 +28,14 @@ def load_json_file(source:str)->dict:
     """
     with open(source, "r") as jf:
         return json.load(jf)
+
+
+def save_json_file(d:dict, name:str):
+    """
+    Save dict to json file
+    """
+    with open(name,"w") as jf:
+        json.dump(d, jf, indent=4)
 
 class Affich(Enum):
     """

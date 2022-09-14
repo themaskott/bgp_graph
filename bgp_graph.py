@@ -18,7 +18,7 @@ from pyteexgraph import Graph, Scope
 
 
 # import custom library
-import common
+import common, autnums
 
 def compute_graph(source: str)->ig.Graph:
     """
@@ -63,7 +63,7 @@ def compute_graph(source: str)->ig.Graph:
     common.Affich.success(0,"Duration: {}".format(end_time - start_time))
     return g
 
-def compute_graph_fr(source: str)->ig.Graph:
+def compute_graph_fr_only(source: str)->ig.Graph:
     """
     Parse all AS pathes to build the ASes graph of french ASes
     Keep all french ASes seen in bview
@@ -111,6 +111,81 @@ def compute_graph_fr(source: str)->ig.Graph:
     common.Affich.success(0,"Duration: {}".format(end_time - start_time))
     return g
 
+def compute_graph_fr_all(source: str)->ig.Graph:
+    """
+    Parse all AS pathes to build the ASes graph of french ASes
+    Keep all french ASes seen in bview and their neighbors
+    """
+    g = ig.Graph()
+    edges = []
+    vertices = []
+    count = 0
+
+    as_fr = common.load_json_file(common.DATAS_DIR+"AS_FR.json")
+
+    start_time = datetime.now()
+
+    with open(source,'r') as s:
+        for l in s:
+            if count % 10000==0:
+                common.Affich.success(0,"Nb of pathes : " + str(count))
+                common.Affich.success(1,"Nb of vertices : " + str(len(vertices)))
+                common.Affich.success(1,"Nb of edges : " + str(len(edges)))
+
+            path = l.strip().split(' ')
+            if len(path) > 1:
+                for i in range(len(path)-1):
+                    # one of the neighbors is a french AS
+                    if (path[i] in as_fr or path[i+1] in as_fr) and path[i]!=path[i+1] and (path[i], path[i+1]) not in edges and (path[i+1], path[i]) not in edges:
+                        edges.append((path[i], path[i+1]))
+                        if path[i] not in vertices:
+                            vertices.append(path[i])
+                        if path[i+1] not in vertices:
+                            vertices.append(path[i+1])
+            count+=1
+
+    common.Affich.success(0,"Nb of pathes : " + str(count))
+    common.Affich.success(1,"Nb of vertices : " + str(len(vertices)))
+    common.Affich.success(1,"Nb of edges : " + str(len(edges)))
+
+    g.add_vertices(vertices)
+    g.add_edges(edges)
+
+    common.Affich.success(0,"Graph extracted successfully")
+    common.Affich.success(1,"Nb of vertices : " + str(g.vcount()))
+    common.Affich.success(1,"Nb of edges : " + str(g.ecount()))
+    end_time = datetime.now()
+    common.Affich.success(0,"Duration: {}".format(end_time - start_time))
+    return g
+
+
+def count_country(g:ig.Graph):
+    as_all = common.load_json_file(common.DATAS_DIR+"AS.json")
+    as_fr = common.load_json_file(common.DATAS_DIR+"AS_FR.json")
+
+    country = {}
+    foreigners = {}
+    for e in g.get_edgelist():
+        as0 = str(g.vs[e[0]]["name"])
+        as1 = str(g.vs[e[1]]["name"])
+        if as0 in as_fr and as1 not in as_fr and as1 in as_all:
+            if as_all[as1]["country"] not in foreigners:
+                foreigners.update({as_all[as1]["country"]:[as1]})
+            elif as1 not in foreigners[as_all[as1]["country"]]:
+                foreigners[as_all[as1]["country"]].append(as1)
+
+        if as1 in as_fr and as0 not in as_fr and as0 in as_all:
+            if as_all[as0]["country"] not in foreigners:
+                foreigners.update({as_all[as0]["country"]:[as0]})
+            elif as0 not in foreigners[as_all[as0]["country"]]:
+                foreigners[as_all[as0]["country"]].append(as0)
+
+
+    for c in foreigners:
+        print(c + " " + str(len(foreigners[c])))
+    common.save_json_file(foreigners, common.RESULTS_DIR+"foreigner_neighbors.json")
+
+
 
 def load_graph(source: str)->ig.Graph:
     """
@@ -122,15 +197,6 @@ def load_graph(source: str)->ig.Graph:
     common.Affich.success(1,"Nb of edges : " + str(g.ecount()))
     return g
 
-def getArgParser():
-    """
-    Manage command line arguments
-    """
-    argparser = argparse.ArgumentParser( add_help=True, description="""Compute graph""" )
-    argparser.add_argument("-c", "--compute", dest="compute", help="Compute graph of ASes from dump file")
-    argparser.add_argument("-f", "--fr", dest="fr", help="Compute graph of french ASes from dump file")
-    argparser.add_argument("-l", "--load", dest="load", help="Load graph from graph file")
-    return argparser
 
 def edges_2_txtfile(g:ig.Graph, filename:str):
     """
@@ -194,9 +260,35 @@ def metrics(g:ig.Graph):
     vertices_above_degree(g, 50, True)
     vertices_above_degree(g, 100, True)
 
+    vertices_under_degree(g, 0, False)
     vertices_under_degree(g, 1, False)
     vertices_under_degree(g, 2, False)
     vertices_under_degree(g, 3, False)
+
+
+def add_vertices_attributes(g:ig.Graph):
+    """
+    Add attributes to vertices
+    Such as AS country
+    """
+    as_all = common.load_json_file(common.DATAS_DIR+"AS.json")
+
+    for v in g.vs:
+        if v['name'] in as_all:
+            v['country'] = as_all[v['name']]['country']
+
+
+def getArgParser():
+    """
+    Manage command line arguments
+    """
+    argparser = argparse.ArgumentParser( add_help=True, description="""Compute graph""" )
+    argparser.add_argument("-c", "--compute", dest="compute", help="Compute graph of ASes from dump file")
+    argparser.add_argument("-f", "--fr", dest="fr", help="Compute graph of french ASes from dump file")
+    argparser.add_argument("-fa", "--frall", dest="fr_all", help="Compute graph of french ASes and foreign neighbor from dump file")
+    argparser.add_argument("-l", "--load", dest="load", help="Load graph from graph file")
+    return argparser
+
 
 if __name__ == "__main__":
 
@@ -211,16 +303,29 @@ if __name__ == "__main__":
 
 
     if args.fr:
-        g = compute_graph_fr(args.fr)
+        g = compute_graph_fr_only(args.fr)
         g.write_gml(common.RESULTS_DIR+"bgp_fr_GML.gml")
         edges_2_txtfile(g, common.RESULTS_DIR+"bgp_fr_graph.txt")
         calc_diameter(common.RESULTS_DIR+"bgp_fr_graph.txt")
+
+    if args.fr_all:
+        g = compute_graph_fr_all(args.fr_all)
+        g.write_gml(common.RESULTS_DIR+"bgp_fr_all_GML.gml")
+        edges_2_txtfile(g, common.RESULTS_DIR+"bgp_fr_all_graph.txt")
+        calc_diameter(common.RESULTS_DIR+"bgp_fr_all_graph.txt")
+        count_country(g)
 
 
     if args.load:
         g = load_graph(args.load)
 
-    metrics(g)
+
+    add_vertices_attributes(g)
+
+    #metrics(g)
+
+    #print(g.degree_distribution())
+
 
     #g.simplify()
     #common.Affich.success(0,"Graph simplified")
