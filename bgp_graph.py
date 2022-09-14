@@ -322,6 +322,14 @@ if __name__ == "__main__":
 
     add_vertices_attributes(g)
 
+
+
+
+    # todo
+    # add AS country to vertices properties
+    # for v in g.vs:
+    #     print(v['name'])
+
     #metrics(g)
 
     #print(g.degree_distribution())
