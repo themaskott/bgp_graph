@@ -25,6 +25,9 @@ Some input files are needed :
 
 `datas/AS.json` and `datas/AS_FR.json` : dictionary of all AS and french ASes (see `autnums.py`)
 
+`teexgraph` is used to compute graph diameter, compile it and place `pyteexgraph.cpython-39-x86_64-linux-gnu.so` in the same folder than py files.
+
+https://github.com/franktakes/teexgraph
 
 ### Usage
 
